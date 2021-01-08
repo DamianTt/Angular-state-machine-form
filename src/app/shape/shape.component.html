@@ -6,7 +6,7 @@
         <button class="action-button" type="button" (click)="setShape(undefined)">Reset Shape</button>
         <button *ngFor="let enum of MyShape | keyvalue" class="action-button" type="button"
           (click)="setShape(enum.key)">
-          Set Shape {{ enum.value}}
+          Set Shape {{ enum.value }}
         </button>
 
         <span>Control Value: {{formControlShape.value}}</span>
@@ -16,7 +16,7 @@
         <button class="action-button" type="button" (click)="setLetter(undefined)">Reset Letter</button>
         <button *ngFor="let enum of MyLetter | keyvalue" class="action-button" type="button"
           (click)="setLetter(enum.key)">
-          Set Letter {{ enum.value}}
+          Set Letter {{ enum.value }}
         </button>
 
         <span>Control Value: {{formControlLetter.value}}</span>
@@ -26,14 +26,24 @@
         <button class="action-button" type="button" (click)="setColor(undefined)">Reset Color</button>
         <button *ngFor="let enum of MyColor | keyvalue" class="action-button" type="button"
           (click)="setColor(enum.key)">
-          Set Color {{ enum.value}}
+          Set Color {{ enum.value }}
         </button>
 
         <span>Control Value: {{formControlColor.value}}</span>
       </div>
+
+      <div class="button-panel">
+        <button class="action-button" type="button" (click)="setShadow(undefined)">Reset Shadow</button>
+        <button *ngFor="let enum of MyColor | keyvalue" class="action-button" type="button"
+          (click)="setShadow(enum.key)">
+          Set Shadow {{ enum.value }}
+        </button>
+
+        <span>Control Value: {{formControlShadow.value}}</span>
+      </div>
     </div>
 
-    <div *ngIf="shapeVisibility" class="shape" [ngClass]="[getShapeClass(), shapeColorClass ? shapeColorClass : '']">
+    <div *ngIf="shapeVisibility" class="shape" [ngClass]="[getShapeClass(), shapeColorClass ? shapeColorClass : '', shapeShadowClass ? shapeShadowClass : '']">
       <span *ngIf="innerLetter" class="inner-letter">{{innerLetter}}</span>
     </div>
   </div>

@@ -43,5 +43,14 @@
     &.blue {
       background: lightskyblue;
     }
+    &.shadow-blue {
+      box-shadow: lightskyblue 10px 10px 15px 0px;
+    }
+    &.shadow-green {
+      box-shadow: lightgreen 10px 10px 15px 0px;
+    }
+    &.shadow-red {
+      box-shadow: orangered 10px 10px 15px 0px;
+    }
   }
 }

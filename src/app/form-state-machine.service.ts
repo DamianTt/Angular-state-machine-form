@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { AbstractControl } from "@angular/forms";
-import { EMPTY, Observable } from "rxjs";
+import { EMPTY, merge, Observable } from "rxjs";
 import {
   distinctUntilChanged,
   map,
@@ -27,6 +27,7 @@ export class FormStateMachineService {
   constructor() {}
 
   getFormStateObservable(stateDefinition: FormStateMachine): Observable<any> {
+    // Tutaj następuje przerwanie wywołań
     if (!stateDefinition || !stateDefinition.switcher) {
       return EMPTY;
     }
@@ -45,13 +46,16 @@ export class FormStateMachineService {
         // Najpierw wykonaj exit u dziecka, a później exit rodzica
         this.fireExitChild(currentStateDefinition);
 
-        // Najpierw wykonaj entry u rodzica, a później entry dziecka
-        this.fireEntryChild(destinationStateDefinition);
+        // Przy każdej zmianie poddrzewo musi być wyznaczone na nowo
+        const subTreeObservables = [];
 
-        return destinationStateDefinition;
+        // Najpierw wykonaj entry u rodzica, a później entry dziecka
+        this.fireEntryChild(destinationStateDefinition, subTreeObservables);
+
+        return subTreeObservables;
       }),
-      switchMap((destinationStateDefinition) => {
-        return this.getFormStateObservable(destinationStateDefinition);
+      switchMap((subTreeObservables) => {
+        return merge(...subTreeObservables);
       })
     );
   }
@@ -72,7 +76,7 @@ export class FormStateMachineService {
     }
   }
 
-  private fireEntryChild(destinationStateDefinition) {
+  private fireEntryChild(destinationStateDefinition, subTreeObservables) {
     if (destinationStateDefinition && destinationStateDefinition.entry) {
       destinationStateDefinition.entry();
     }
@@ -80,8 +84,11 @@ export class FormStateMachineService {
       const switcher = destinationStateDefinition.switcher;
       const destinationSubStateDefinition =
         switcher.states[switcher.control.value];
+      subTreeObservables.push(
+        this.getFormStateObservable(destinationStateDefinition)
+      );
       if (destinationSubStateDefinition) {
-        this.fireEntryChild(destinationSubStateDefinition);
+        this.fireEntryChild(destinationSubStateDefinition, subTreeObservables);
       }
     }
   }

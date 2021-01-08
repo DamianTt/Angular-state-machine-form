@@ -44,6 +44,7 @@ export class ShapeComponent implements OnInit, OnDestroy {
   shapeVisibility: boolean;
   innerLetter: string;
   shapeColorClass: string;
+  shapeShadowClass: string;
 
   @ViewChild('graphContainer', { read: ElementRef }) graphContainer: ElementRef;
 
@@ -57,6 +58,7 @@ export class ShapeComponent implements OnInit, OnDestroy {
       shape: undefined,
       color: undefined,
       letter: undefined,
+      shadow: undefined
     });
 
     this.mymachine = {
@@ -266,6 +268,41 @@ export class ShapeComponent implements OnInit, OnDestroy {
                           console.log("MyColor.GREEN: onExit");
                           this.shapeColorClass = null;
                         },
+                        switcher: {
+                          control: this.formControlShadow,
+                          states: {
+                            [MyColor.RED]: {
+                              entry: () => {
+                                console.log("MyShadow.RED: onEnter");
+                                this.shapeShadowClass = "shadow-red";
+                              },
+                              exit: () => {
+                                console.log("MyShadow.RED: onExit");
+                                this.shapeShadowClass = null;
+                              },
+                            },
+                            [MyColor.BLUE]: {
+                              entry: () => {
+                                console.log("MyShadow.BLUE: onEnter");
+                                this.shapeShadowClass = "shadow-blue";
+                              },
+                              exit: () => {
+                                console.log("MyShadow.BLUE: onExit");
+                                this.shapeShadowClass = null;
+                              },
+                            },
+                            [MyColor.GREEN]: {
+                              entry: () => {
+                                console.log("MyShadow.GREEN: onEnter");
+                                this.shapeShadowClass = "shadow-green";
+                              },
+                              exit: () => {
+                                console.log("MyShadow.GREEN: onExit");
+                                this.shapeShadowClass = null;
+                              },
+                            }
+                          }
+                        }
                       },
                     },
                   },
@@ -313,6 +350,10 @@ export class ShapeComponent implements OnInit, OnDestroy {
     this.formControlColor.setValue(color);
   }
 
+  setShadow(color: MyColor) {
+    this.formControlShadow.setValue(color);
+  }
+
   get formControlShape(): AbstractControl {
     return this.myForm.get("shape");
   }
@@ -323,5 +364,9 @@ export class ShapeComponent implements OnInit, OnDestroy {
 
   get formControlColor(): AbstractControl {
     return this.myForm.get("color");
+  }
+
+  get formControlShadow(): AbstractControl {
+    return this.myForm.get("shadow");
   }
 }
