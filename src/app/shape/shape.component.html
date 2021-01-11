@@ -23,6 +23,16 @@
       </div>
 
       <div class="button-panel">
+        <button class="action-button" type="button" (click)="setNumber(undefined)">Reset Number</button>
+        <button *ngFor='let key of [1,2,3]' class="action-button" type="button"
+          (click)="setNumber(key)">
+          Set Number {{ key }}
+        </button>
+
+        <span>Control Value: {{formControlNumber.value}}</span>
+      </div>
+
+      <div class="button-panel">
         <button class="action-button" type="button" (click)="setColor(undefined)">Reset Color</button>
         <button *ngFor="let enum of MyColor | keyvalue" class="action-button" type="button"
           (click)="setColor(enum.key)">
@@ -45,6 +55,7 @@
 
     <div *ngIf="shapeVisibility" class="shape" [ngClass]="[getShapeClass(), shapeColorClass ? shapeColorClass : '', shapeShadowClass ? shapeShadowClass : '']">
       <span *ngIf="innerLetter" class="inner-letter">{{innerLetter}}</span>
+      <span *ngIf="innerNumber" class="inner-letter">{{innerNumber}}</span>
     </div>
   </div>
 

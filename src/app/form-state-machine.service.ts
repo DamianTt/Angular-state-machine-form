@@ -1,18 +1,18 @@
-import { Injectable } from "@angular/core";
-import { AbstractControl } from "@angular/forms";
-import { EMPTY, merge, Observable } from "rxjs";
+import { Injectable } from '@angular/core';
+import { AbstractControl } from '@angular/forms';
+import { EMPTY, merge, Observable } from 'rxjs';
 import {
   distinctUntilChanged,
   map,
   pairwise,
   startWith,
   switchMap,
-} from "rxjs/operators";
+} from 'rxjs/operators';
 
 export interface FormStateMachine {
   entry?: () => void;
   exit?: () => void;
-  switcher?: Switcher;
+  switcher?: Switcher[];
 }
 
 export interface Switcher {
@@ -21,19 +21,30 @@ export interface Switcher {
 }
 
 @Injectable({
-  providedIn: "root",
+  providedIn: 'root',
 })
 export class FormStateMachineService {
   constructor() {}
 
   getFormStateObservable(stateDefinition: FormStateMachine): Observable<any> {
     // Tutaj następuje przerwanie wywołań
-    if (!stateDefinition || !stateDefinition.switcher) {
+    if (
+      !stateDefinition ||
+      !stateDefinition.switcher ||
+      !stateDefinition.switcher.length
+    ) {
       return EMPTY;
     }
 
-    const switcher = stateDefinition.switcher;
+    // Parallel States
+    return merge(
+      ...stateDefinition.switcher.map((switcher) => {
+        return this.getCompoundStatesStream(switcher);
+      })
+    );
+  }
 
+  getCompoundStatesStream(switcher: Switcher) {
     return switcher.control.valueChanges.pipe(
       startWith(switcher.control.value),
       distinctUntilChanged(),
@@ -60,36 +71,43 @@ export class FormStateMachineService {
     );
   }
 
-  private fireExitChild(currentStateDefinition) {
-    if (currentStateDefinition && currentStateDefinition.switcher) {
-      const switcher = currentStateDefinition.switcher;
-      const currentSubStateDefinition = switcher.states[switcher.control.value];
+  private fireExitChild(formStateMachine: FormStateMachine) {
+    if (formStateMachine && formStateMachine.switcher) {
+      for (let i = formStateMachine.switcher.length; i > 0; i--) {
+        const switcher = formStateMachine.switcher[i - 1];
+        const currentSubStateDefinition =
+          switcher.states[switcher.control.value];
 
-      // rekurencja - exit następuje zaczynając od dzieci
-      if (currentSubStateDefinition) {
-        this.fireExitChild(currentSubStateDefinition);
+        // rekurencja - exit następuje zaczynając od dzieci
+        if (currentSubStateDefinition) {
+          this.fireExitChild(currentSubStateDefinition);
+        }
       }
     }
 
-    if (currentStateDefinition && currentStateDefinition.exit) {
-      currentStateDefinition.exit();
+    if (formStateMachine && formStateMachine.exit) {
+      formStateMachine.exit();
     }
   }
 
-  private fireEntryChild(destinationStateDefinition, subTreeObservables) {
-    if (destinationStateDefinition && destinationStateDefinition.entry) {
-      destinationStateDefinition.entry();
+  private fireEntryChild(formStateMachine: FormStateMachine, subTreeObservables) {
+    if (formStateMachine && formStateMachine.entry) {
+      formStateMachine.entry();
     }
-    if (destinationStateDefinition && destinationStateDefinition.switcher) {
-      const switcher = destinationStateDefinition.switcher;
-      const destinationSubStateDefinition =
-        switcher.states[switcher.control.value];
+    if (formStateMachine && formStateMachine.switcher) {
       subTreeObservables.push(
-        this.getFormStateObservable(destinationStateDefinition)
+        this.getFormStateObservable(formStateMachine)
       );
-      if (destinationSubStateDefinition) {
-        this.fireEntryChild(destinationSubStateDefinition, subTreeObservables);
-      }
+      formStateMachine.switcher.forEach((switcher) => {
+        const destinationSubStateDefinition =
+          switcher.states[switcher.control.value];
+        if (destinationSubStateDefinition) {
+          this.fireEntryChild(
+            destinationSubStateDefinition,
+            subTreeObservables
+          );
+        }
+      });
     }
   }
 }

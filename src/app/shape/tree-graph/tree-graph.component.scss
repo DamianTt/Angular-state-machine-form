@@ -6,6 +6,12 @@
       stroke-width: 3px;
     }
 
+    .node {
+      &.category circle {
+        stroke: black;
+      }
+    }
+
     .node text {
       font: 12px sans-serif;
     }
